@@ -28,6 +28,7 @@ import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-register',
+  standalone: true,
   imports: [
     CommonModule,
     MatCardModule,
@@ -36,15 +37,8 @@ import { MatSelectModule } from '@angular/material/select';
     MatLabel,
     ReactiveFormsModule,
     MatSpinner,
-    MatSelectModule, // ✅ Add this
-
-    RouterModule, // if you're using routerLink
-    MatError,
-    MatLabel,
-    ReactiveFormsModule,
-    MatSpinner,
-    MatFormField,
-    MatInputModule, //this is not importable and I do not know why
+    RouterModule,
+    MatInputModule,
     MatFormFieldModule,
     MatButtonModule,
     MatIconModule,
@@ -131,20 +125,6 @@ import { MatSelectModule } from '@angular/material/select';
               </mat-error>
             </mat-form-field>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Select Role</mat-label>
-              <mat-select formControlName="roles" multiple>
-                <mat-option value="USER">User</mat-option>
-                <mat-option value="ADMIN">Admin</mat-option>
-                <mat-option value="MANAGER">Admin</mat-option>
-              </mat-select>
-              <mat-error
-                *ngIf="registerForm.get('roles')?.hasError('required')"
-              >
-                At least one role is required
-              </mat-error>
-            </mat-form-field>
-
             <div class="form-actions">
               <button
                 mat-raised-button
@@ -208,7 +188,6 @@ export class RegisterComponent {
         email: ['', [Validators.required, Validators.email]],
         password: ['', [Validators.required, Validators.minLength(8)]],
         confirmPassword: ['', [Validators.required]],
-        roles: [[], Validators.required], // New control
       },
       { validators: this.checkPasswords }
     );
@@ -225,7 +204,13 @@ export class RegisterComponent {
   //     this.isLoading = true;
   //     const { username, email, password } = this.registerForm.value;
 
-  //     this.authService.register(username, email, password).subscribe({
+  //     const payload = {
+  //       username,
+  //       email,
+  //       password,
+  //     };
+
+  //     this.authService.register(payload).subscribe({
   //       next: () => {
   //         this.isLoading = false;
   //         this.snackBar.open(
@@ -252,14 +237,15 @@ export class RegisterComponent {
   onSubmit(): void {
     if (this.registerForm.valid) {
       this.isLoading = true;
-      const { username, email, password, role } = this.registerForm.value;
 
+      // Create payload with correct field names
       const payload = {
-        username,
-        email,
-        password,
-        roles: [role], // or role if your backend accepts a single string
+        username: this.registerForm.get('username')?.value,
+        email: this.registerForm.get('email')?.value,
+        password: this.registerForm.get('password')?.value,
       };
+
+      console.log('Final payload before sending:', payload);
 
       this.authService.register(payload).subscribe({
         next: () => {
@@ -276,10 +262,14 @@ export class RegisterComponent {
         },
         error: (error) => {
           this.isLoading = false;
-          this.snackBar.open(error.message || 'Registration failed', 'Close', {
-            duration: 5000,
-            panelClass: ['error-snackbar'],
-          });
+          this.snackBar.open(
+            error.error?.message || 'Registration failed',
+            'Close',
+            {
+              duration: 5000,
+              panelClass: ['error-snackbar'],
+            }
+          );
         },
       });
     }

@@ -17,7 +17,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @EntityGraph(attributePaths = "roles")
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.email = :email")
-    // @EntityGraph(attributePaths = "roles")
     Optional<User> findByEmailWithRoles(String email);
 
     boolean existsByUsername(String username);

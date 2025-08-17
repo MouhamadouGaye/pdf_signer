@@ -33,9 +33,12 @@ package com.pdfsigner.pdf_signer.service;
 import com.pdfsigner.pdf_signer.model.User;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -81,9 +84,14 @@ public class MyUserDetailsService implements UserDetailsService {
         User user = userRepository.findByEmailWithRoles(email) // Custom query
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+        // Convert roles to GrantedAuthority
+        List<SimpleGrantedAuthority> authorities = user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.name()))
+                .collect(Collectors.toList());
+
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPassword(),
-                user.getAuthorities());
+                authorities);
     }
 }

@@ -176,25 +176,41 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity(debug = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final MyUserDetailsService userDetailsService;
 
+    // @Bean
+    // @DependsOn({ "authenticationProvider", "passwordEncoder" })
+    // public SecurityFilterChain securityFilterChain(HttpSecurity http) throws
+    // Exception {
+    // http
+    // .cors(withDefaults())
+    // .csrf(csrf -> csrf.disable())
+    // .authorizeHttpRequests(auth -> auth
+    // .requestMatchers("/api/users/register", "/api/users/login", "/error",
+    // "/").permitAll()
+    // // .requestMatchers("/api/**").authenticated()
+    // .anyRequest().authenticated())
+    // .sessionManagement(session ->
+    // session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    // .authenticationProvider(authenticationProvider())
+    // .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+    // return http.build();
+    // }
+
     @Bean
-    @DependsOn({ "authenticationProvider", "passwordEncoder" })
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .cors(withDefaults())
-                .csrf(csrf -> csrf.disable())
+        http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/users/register", "/api/users/login").permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -214,18 +230,28 @@ public class SecurityConfig {
     }
 
     // @Bean
-    // public AuthenticationManager
-    // authenticationManager(AuthenticationConfiguration config) throws Exception {
-    // return config.getAuthenticationManager();
+    // public CorsConfigurationSource corsConfigurationSource() {
+    // CorsConfiguration configuration = new CorsConfiguration();
+    // configuration.setAllowedOrigins(List.of("http://localhost:4200"));
+    // configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+    // configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+    // configuration.setAllowCredentials(true);
+
+    // UrlBasedCorsConfigurationSource source = new
+    // UrlBasedCorsConfigurationSource();
+    // source.registerCorsConfiguration("/**", configuration);
+    // return source;
     // }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:4200"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
+        configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

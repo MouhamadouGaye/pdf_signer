@@ -207,19 +207,46 @@ export class LoginComponent implements OnInit {
     }
   }
 
+  // onSubmit(): void {
+  //   if (this.loginForm.valid) {
+  //     this.isLoading = true;
+  //     const { email, password } = this.loginForm.value;
+  //     console.log('Form values:', { email, password });
+
+  //     this.authService.login(email, password).subscribe({
+  //       next: () => {
+  //         this.isLoading = false;
+  //         this.router.navigate(['/']);
+  //       },
+  //       error: (error) => {
+  //         this.isLoading = false;
+  //         this.snackBar.open(error.message || 'Login failed', 'Close', {
+  //           duration: 5000,
+  //           panelClass: ['error-snackbar'],
+  //         });
+  //       },
+  //     });
+  //   }
+  // }
+
   onSubmit(): void {
     if (this.loginForm.valid) {
       this.isLoading = true;
       const { email, password } = this.loginForm.value;
+      console.log('Form values:', { email, password });
 
       this.authService.login(email, password).subscribe({
         next: () => {
           this.isLoading = false;
-          this.router.navigate(['']);
+          this.router.navigate(['/']);
         },
         error: (error) => {
           this.isLoading = false;
-          this.snackBar.open(error.message || 'Login failed', 'Close', {
+          console.error('Login error in component:', error);
+
+          const errorMessage =
+            error.message || 'Login failed. Please check your credentials.';
+          this.snackBar.open(errorMessage, 'Close', {
             duration: 5000,
             panelClass: ['error-snackbar'],
           });

@@ -10,12 +10,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import org.springframework.web.bind.annotation.*;
 
+import com.pdfsigner.pdf_signer.dto.RegisterRequest;
 import com.pdfsigner.pdf_signer.model.User;
 import com.pdfsigner.pdf_signer.request.LoginRequest;
 import com.pdfsigner.pdf_signer.service.UserService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/users")
@@ -23,16 +26,21 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody User user) {
-        try {
-            User registeredUser = userService.registerUser(user);
-            return ResponseEntity.ok(registeredUser);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
+    // @PostMapping("/register")
+    // public ResponseEntity<?> registerUser(@RequestBody RegisterRequest user) {
+    // try {
+    // User registeredUser = userService.registerUser(user);
+    // return ResponseEntity.ok(registeredUser);
+    // } catch (Exception e) {
+    // return ResponseEntity.badRequest().body(e.getMessage());
+    // }
+    // }
 
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest) {
+        log.info("Raw request: {}", registerRequest);
+        return ResponseEntity.ok(userService.registerUser(registerRequest));
+    }
     // @PostMapping("/login")
     // public ResponseEntity<?> login(@RequestBody User user) {
     // try {

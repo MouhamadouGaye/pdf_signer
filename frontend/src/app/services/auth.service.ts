@@ -507,8 +507,12 @@
 // }
 
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpHeaders,
+} from '@angular/common/http';
+import { BehaviorSubject, catchError, Observable, tap, throwError } from 'rxjs';
 import { environment } from '../envirennements/environnement';
 
 interface AuthResponse {
@@ -550,13 +554,34 @@ export class AuthService {
     return userData ? JSON.parse(userData) : null;
   }
 
+  // login(email: string, password: string): Observable<AuthResponse> {
+  //   return this.http
+  //     .post<AuthResponse>(`${this.apiUrl}/login`, { email, password })
+  //     .pipe(
+  //       tap((response) => {
+  //         this.setSession(response);
+  //         this.authSubject.next(true);
+  //       })
+  //     );
+  // }
+
   login(email: string, password: string): Observable<AuthResponse> {
+    console.log('Attempting login with:', email);
+
     return this.http
       .post<AuthResponse>(`${this.apiUrl}/login`, { email, password })
       .pipe(
         tap((response) => {
+          console.log('Login successful, response:', response);
           this.setSession(response);
           this.authSubject.next(true);
+        }),
+        catchError((error: HttpErrorResponse) => {
+          console.error('Login error:', error);
+          console.error('Error details:', error.error);
+          return throwError(
+            () => new Error(error.error?.message || 'Login failed')
+          );
         })
       );
   }
@@ -565,12 +590,9 @@ export class AuthService {
     username: string;
     email: string;
     password: string;
-    roles: string[];
   }): Observable<AuthResponse> {
     return this.http
-      .post<AuthResponse>(`${this.apiUrl}/register`, {
-        payload,
-      })
+      .post<AuthResponse>(`${this.apiUrl}/register`, payload)
       .pipe(
         tap((response) => {
           this.setSession(response);
@@ -578,6 +600,17 @@ export class AuthService {
         })
       );
   }
+  // register(registerRequest: any): Observable<any> {
+  //   return this.http.post(`${this.apiUrl}/register`, registerRequest).pipe(
+  //     catchError((error) => {
+  //       console.error('Registration error:', error);
+  //       if (error instanceof HttpErrorResponse) {
+  //         console.error('Response body:', error.error);
+  //       }
+  //       return throwError(error);
+  //     })
+  //   );
+  // }
 
   logout(): void {
     localStorage.removeItem(this.tokenKey);
@@ -586,6 +619,7 @@ export class AuthService {
   }
 
   private setSession(authResult: AuthResponse): void {
+    console.log('Setting session with token:', authResult.token);
     localStorage.setItem(this.tokenKey, authResult.token);
     localStorage.setItem(this.userKey, JSON.stringify(authResult.user));
   }
