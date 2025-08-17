@@ -5,11 +5,13 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
+import com.pdfsigner.pdf_signer.dto.AuthResponse;
 import com.pdfsigner.pdf_signer.dto.RegisterRequest;
 import com.pdfsigner.pdf_signer.model.User;
 import com.pdfsigner.pdf_signer.request.LoginRequest;
@@ -41,6 +43,7 @@ public class UserController {
         log.info("Raw request: {}", registerRequest);
         return ResponseEntity.ok(userService.registerUser(registerRequest));
     }
+
     // @PostMapping("/login")
     // public ResponseEntity<?> login(@RequestBody User user) {
     // try {
@@ -51,6 +54,17 @@ public class UserController {
     // }
     // }
 
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
+        try {
+            AuthResponse response = userService.login(loginRequest);
+            return ResponseEntity.ok(response);
+        } catch (UsernameNotFoundException | BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
     // @PostMapping("/login")
     // public ResponseEntity<?> login(@RequestBody UserDetails user) {
     // try {
@@ -151,16 +165,16 @@ public class UserController {
     // }
     // }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        try {
-            Map<String, Object> response = userService.login(loginRequest);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", e.getMessage()));
-        }
-    }
+    // @PostMapping("/login")
+    // public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+    // try {
+    // Map<String, Object> response = userService.login(loginRequest);
+    // return ResponseEntity.ok(response);
+    // } catch (Exception e) {
+    // return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+    // .body(Map.of("error", e.getMessage()));
+    // }
+    // }
 
     @GetMapping("/profile")
     public ResponseEntity<?> getUserProfile(@AuthenticationPrincipal UserDetails userDetails) {

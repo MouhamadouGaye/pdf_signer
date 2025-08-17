@@ -151,6 +151,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.pdfsigner.pdf_signer.service.MyUserDetailsService;
 import com.pdfsigner.pdf_signer.util.JwtUtil;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+
 import java.io.IOException;
 
 // @Component
@@ -208,9 +211,63 @@ import java.io.IOException;
 //     }
 // }
 
-@Slf4j
+// @Slf4j
+// @Component
+// @RequiredArgsConstructor
+// public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+//     private final MyUserDetailsService userDetailsService;
+//     private final JwtUtil jwtUtil;
+
+//     @Override
+//     protected void doFilterInternal(
+//             HttpServletRequest request,
+//             HttpServletResponse response,
+//             FilterChain filterChain)
+//             throws ServletException, IOException {
+
+//         String authHeader = request.getHeader("Authorization");
+//         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+//             filterChain.doFilter(request, response);
+//             return;
+//         }
+
+//         String token = authHeader.substring(7);
+//         log.info("Received JWT token: {}", token);
+
+//         try {
+//             String username = jwtUtil.extractUsername(token);
+//             log.info("Extracted username from token: {}", username);
+
+//             if (username != null &&
+//                     SecurityContextHolder.getContext().getAuthentication() == null) {
+
+//                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+//                 log.info("Loaded user details: {}", userDetails.getUsername());
+
+//                 if (jwtUtil.validateToken(token, userDetails)) {
+//                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+//                             userDetails,
+//                             null,
+//                             userDetails.getAuthorities());
+
+//                     authToken.setDetails(
+//                             new WebAuthenticationDetailsSource().buildDetails(request));
+
+//                     SecurityContextHolder.getContext().setAuthentication(authToken);
+//                     log.info("Authentication set in security context");
+//                 }
+//             }
+//         } catch (Exception e) {
+//             log.error("JWT processing error: {}", e.getMessage());
+//         }
+
+//         filterChain.doFilter(request, response);
+//     }
+// }
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final MyUserDetailsService userDetailsService;
@@ -230,17 +287,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7);
-        log.info("Received JWT token: {}", token);
 
         try {
             String username = jwtUtil.extractUsername(token);
-            log.info("Extracted username from token: {}", username);
 
             if (username != null &&
                     SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                log.info("Loaded user details: {}", userDetails.getUsername());
 
                 if (jwtUtil.validateToken(token, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
@@ -252,11 +306,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             new WebAuthenticationDetailsSource().buildDetails(request));
 
                     SecurityContextHolder.getContext().setAuthentication(authToken);
-                    log.info("Authentication set in security context");
                 }
             }
-        } catch (Exception e) {
-            log.error("JWT processing error: {}", e.getMessage());
+        } catch (ExpiredJwtException e) {
+            log.warn("JWT token expired: {}", e.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token expired");
+            return;
+        } catch (JwtException | IllegalArgumentException e) {
+            log.error("Invalid JWT token: {}", e.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+            return;
         }
 
         filterChain.doFilter(request, response);

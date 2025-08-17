@@ -193,6 +193,6 @@ public class User implements Serializable { // Added Serializable for JWT compat
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.roles.stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
     }
 }

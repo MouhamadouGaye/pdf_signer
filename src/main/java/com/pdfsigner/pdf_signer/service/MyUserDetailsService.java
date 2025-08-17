@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -48,6 +49,7 @@ import com.pdfsigner.pdf_signer.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 // @Service
 // @Transactional
@@ -73,12 +75,12 @@ import lombok.RequiredArgsConstructor;
 //                 user.getAuthorities());
 //     }
 // }
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MyUserDetailsService implements UserDetailsService {
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     public UserDetails loadUserByUsername(String email) {
         User user = userRepository.findByEmailWithRoles(email) // Custom query
@@ -94,4 +96,32 @@ public class MyUserDetailsService implements UserDetailsService {
                 user.getPassword(),
                 authorities);
     }
+
+    // Explicit constructor with logging
+    // @Autowired
+    // public MyUserDetailsService(UserRepository userRepository) {
+    // this.userRepository = userRepository;
+    // log.info("UserRepository injected: {}", userRepository != null);
+    // }
+
+    // @Override
+    // public UserDetails loadUserByUsername(String email) {
+    // log.info("Loading user by email: {}", email);
+
+    // // Use the correct repository method
+    // User user = userRepository.findByEmailWithRoles(email)
+    // .orElseThrow(() -> new UsernameNotFoundException("User not found with email:
+    // " + email));
+
+    // log.info("User found: {}", user.getEmail());
+
+    // List<SimpleGrantedAuthority> authorities = user.getRoles().stream()
+    // .map(role -> new SimpleGrantedAuthority(role.name()))
+    // .collect(Collectors.toList());
+
+    // return new org.springframework.security.core.userdetails.User(
+    // user.getEmail(),
+    // user.getPassword(),
+    // authorities);
+    // }
 }

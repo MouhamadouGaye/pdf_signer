@@ -6,7 +6,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.pdfsigner.pdf_signer.dto.AuthResponse;
 import com.pdfsigner.pdf_signer.dto.RegisterRequest;
+import com.pdfsigner.pdf_signer.dto.UserDto;
 import com.pdfsigner.pdf_signer.model.Role;
 import com.pdfsigner.pdf_signer.model.User;
 import com.pdfsigner.pdf_signer.repository.UserRepository;
@@ -40,60 +42,55 @@ public class UserService {
         this.jwtUtil = jwtUtil;
     }
 
-    // public User registerUser(RegisterRequest registerRequest) {
-    // // Check if username or email already exists
-    // if (userRepository.existsByUsername(registerRequest.getUsername())) {
-    // throw new RuntimeException("Username already exists");
-    // }
-    // if (userRepository.existsByEmail(registerRequest.getEmail())) {
-    // throw new RuntimeException("Email already exists");
-    // }
-
-    // // Create new User entity
-    // User user = new User();
-    // user.setUsername(registerRequest.getUsername());
-    // user.setPassword(passwordEncoder.encode(registerRequest.getPassword())); //
-    // Encode password
-    // user.setEmail(registerRequest.getEmail());
-    // user.setCreatedAt(LocalDateTime.now());
-
-    // // Assign default role (e.g., ROLE_USER)
-    // user.setRoles(Collections.singleton(Role.ROLE_USER)); // Ensure Role enum
-    // exists
-
-    // return userRepository.save(user);
-    // }
-
     public User registerUser(RegisterRequest registerRequest) {
-        // Log received values
-        log.info("Registering user: {}", registerRequest.getEmail());
-        log.info("Username: {}", registerRequest.getUsername());
-        log.info("Password present: {}", registerRequest.getPassword() != null);
-
-        // Check for null password
-        if (registerRequest.getPassword() == null) {
-            throw new IllegalArgumentException("Password cannot be null");
-        }
-
         // Check if username or email already exists
-        if (userRepository.existsByUsername(registerRequest.getUsername())) {
-            throw new RuntimeException("Username already exists");
-        }
-
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
 
-        // Create new user entity
+        // Create new User entity
         User user = new User();
         user.setUsername(registerRequest.getUsername());
+        user.setPassword(passwordEncoder.encode(registerRequest.getPassword())); // Encode password
         user.setEmail(registerRequest.getEmail());
-        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
-        user.setRoles(Set.of(Role.USER));
+
+        // Assign default role (e.g., ROLE_USER)
+        user.setRoles(Collections.singleton(Role.USER)); // Ensure Role enum exists
 
         return userRepository.save(user);
     }
+
+    // public User registerUser(RegisterRequest registerRequest) {
+    // // Log received values
+    // log.info("Registering user: {}", registerRequest.getEmail());
+    // log.info("Username: {}", registerRequest.getUsername());
+    // log.info("Password present: {}", registerRequest.getPassword() != null);
+
+    // // Check for null password
+    // if (registerRequest.getPassword() == null) {
+    // throw new IllegalArgumentException("Password cannot be null");
+    // }
+
+    // // Check if username or email already exists
+    // if (userRepository.existsByUsername(registerRequest.getUsername())) {
+    // throw new RuntimeException("Username already exists");
+    // }
+
+    // if (userRepository.existsByEmail(registerRequest.getEmail())) {
+    // throw new RuntimeException("Email already exists");
+    // }
+
+    // // Create new user entity
+    // User user = new User();
+    // user.setUsername(registerRequest.getUsername());
+    // user.setEmail(registerRequest.getEmail());
+    // user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+    // user.setCreatedAt(LocalDateTime.now());
+    // user.setRoles(Set.of(Role.USER));
+
+    // return userRepository.save(user);
+    // }
 
     // public User getUserByUsername(String username) {
     // return userRepository.findByUsername(username)
@@ -142,7 +139,45 @@ public class UserService {
     // return response;
     // }
 
-    public Map<String, Object> login(LoginRequest loginRequest) {
+    // public Map<String, Object> login(LoginRequest loginRequest) {
+    // log.info("Login attempt for email: {}", loginRequest.getEmail());
+
+    // User user = userRepository.findByEmail(loginRequest.getEmail())
+    // .orElseThrow(() -> {
+    // log.warn("User not found for email: {}", loginRequest.getEmail());
+    // return new UsernameNotFoundException("User not found");
+    // });
+
+    // log.info("User found: {}", user.getEmail());
+    // log.info("Stored password hash: {}", user.getPassword());
+    // log.info("Provided password: {}", loginRequest.getPassword());
+
+    // if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword()))
+    // {
+    // log.warn("Password mismatch for user: {}", user.getEmail());
+    // throw new BadCredentialsException("Invalid credentials");
+    // }
+
+    // log.info("Password matches for user: {}", user.getEmail());
+
+    // UserDetails userDetails =
+    // userDetailsService.loadUserByUsername(user.getEmail());
+    // log.info("User authorities: {}", userDetails.getAuthorities());
+
+    // String token = jwtUtil.generateToken(userDetails);
+    // log.info("Generated JWT token: {}", token);
+
+    // Map<String, Object> response = new HashMap<>();
+    // response.put("token", token);
+    // response.put("user", Map.of(
+    // "id", user.getId(),
+    // "email", user.getEmail(),
+    // "username", user.getUsername()));
+
+    // return response;
+    // }
+
+    public AuthResponse login(LoginRequest loginRequest) {
         log.info("Login attempt for email: {}", loginRequest.getEmail());
 
         User user = userRepository.findByEmail(loginRequest.getEmail())
@@ -151,30 +186,16 @@ public class UserService {
                     return new UsernameNotFoundException("User not found");
                 });
 
-        log.info("User found: {}", user.getEmail());
-        log.info("Stored password hash: {}", user.getPassword());
-        log.info("Provided password: {}", loginRequest.getPassword());
-
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             log.warn("Password mismatch for user: {}", user.getEmail());
             throw new BadCredentialsException("Invalid credentials");
         }
 
-        log.info("Password matches for user: {}", user.getEmail());
-
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
-        log.info("User authorities: {}", userDetails.getAuthorities());
-
         String token = jwtUtil.generateToken(userDetails);
-        log.info("Generated JWT token: {}", token);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("token", token);
-        response.put("user", Map.of(
-                "id", user.getId(),
-                "email", user.getEmail(),
-                "username", user.getUsername()));
-
-        return response;
+        UserDto userDTO = new UserDto(user.getId(), user.getEmail(), user.getUsername());
+        return new AuthResponse(token, userDTO);
     }
+
 }

@@ -8,10 +8,16 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.pdfsigner.pdf_signer.model.User;
 import com.pdfsigner.pdf_signer.repository.UserRepository;
+
+// @SpringBootApplication
+// @EntityScan("com.pdfsigner.pdf_signer.model")
+// @EnableJpaRepositories("com.pdfsigner.pdf_signer.repository")
+// @ComponentScan("com.pdfsigner.pdf_signer")
 
 @SpringBootApplication
 public class PdfSignerApplication {
