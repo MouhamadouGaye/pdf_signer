@@ -1,9 +1,17 @@
 package com.pdfsigner.pdf_signer.dto;
 
+import java.util.Set;
+
+import javax.management.relation.Role;
+
 public class RegisterRequest {
     private String username;
-    private String password;
+
+    // @NotBlank @Email
     private String email;
+
+    // @NotBlank @Size(min = 8)
+    private String password;
 
     // Must have default constructor
     public RegisterRequest() {
@@ -33,4 +41,5 @@ public class RegisterRequest {
     public void setEmail(String email) {
         this.email = email;
     }
+
 }

@@ -102,6 +102,12 @@
 package com.pdfsigner.pdf_signer.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -115,6 +121,10 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 @Entity
 @Table(name = "users")
+@Getter
+@Setter
+@NoArgsConstructor // 👈 Required by Hibernate
+@Builder // Still allows builder pattern
 public class User implements Serializable { // Added Serializable for JWT compatibility
 
     @Id
@@ -139,6 +149,15 @@ public class User implements Serializable { // Added Serializable for JWT compat
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    public User(Long id, String username, String password, String email, Set<Role> roles, LocalDateTime createdAt) {
+        this.id = id;
+        this.username = username;
+        this.email = email;
+        this.roles = roles;
+        this.createdAt = createdAt;
+
+    }
 
     // Getters and Setters
     public Long getId() {

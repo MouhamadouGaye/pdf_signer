@@ -1,7 +1,6 @@
 package com.pdfsigner.pdf_signer;
 
 import java.util.Set;
-
 import com.pdfsigner.pdf_signer.model.Role;
 
 import org.springframework.boot.CommandLineRunner;
