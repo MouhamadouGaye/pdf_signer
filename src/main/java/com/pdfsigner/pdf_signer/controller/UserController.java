@@ -79,10 +79,23 @@ public class UserController {
     // }
 
     // @PostMapping("/register")
-    // public ResponseEntity<?> registerUser(@RequestBody RegisterRequest
-    // registerRequest) {
-    // log.info("Raw request: {}", registerRequest);
-    // return ResponseEntity.ok(userService.registerUser(registerRequest));
+    // public ResponseEntity<UserDto> register(@Valid @RequestBody RegisterRequest
+    // request) {
+    // System.out.println("Controller received password: " + request.getPassword());
+    // // Debug
+    // UserDto userDto = userService.registerUser(request);
+    // return ResponseEntity.ok(userDto);
+    // }
+
+    // @PostMapping("/login")
+    // public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    // try {
+    // LoginResponse registeredUser = userService.login(request);
+
+    // return ResponseEntity.ok(registeredUser);
+    // } catch (Exception e) {
+    // return ResponseEntity.badRequest().body(e.getMessage());
+    // }
     // }
 
     // @PostMapping("/login")
@@ -120,8 +133,27 @@ public class UserController {
     // }
 
     // @PostMapping("/login")
-    // public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest
-    // loginRequest) {
+    // public ResponseEntity<?> login(@RequestBody UserDetails user) {
+    // try {
+    // User authenticatedUser = userService.login(user);
+    // String token = jwtUtil.generateToken(user.getUsername());
+
+    // // ✅ Return a response matching the expected structure
+    // Map<String, Object> response = new HashMap<>();
+    // response.put("token", token); // Replace with real JWT later
+    // response.put("user", Map.of(
+    // "id", authenticatedUser.getId(),
+    // "email", authenticatedUser.getEmail(),
+    // "username", authenticatedUser.getUsername()));
+
+    // return ResponseEntity.ok(response);
+    // } catch (Exception e) {
+    // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+    // }
+    // }
+
+    // @PostMapping("/login")
+    // public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
     // try {
     // UserDetails userDetails =
     // userDetailsService.loadUserByUsername(loginRequest.getUsername());
@@ -130,6 +162,11 @@ public class UserController {
     // System.out.println("Raw password from request: " +
     // loginRequest.getPassword());
     // System.out.println("Encoded password from DB: " + userDetails.getPassword());
+
+    // if (!passwordEncoder.matches(loginRequest.getPassword(),
+    // userDetails.getPassword())) {
+    // throw new BadCredentialsException("Invalid username or password");
+    // }
 
     // // Authenticate the user manually (or use AuthenticationManager)
     // if (!passwordEncoder.matches(loginRequest.getPassword(),
@@ -158,8 +195,46 @@ public class UserController {
     // }
 
     // @PostMapping("/login")
-    // public ResponseEntity<Map<String, Object>> loginWithMap(@RequestBody
-    // LoginRequest loginRequest) {
+    // public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+    // try {
+    // // Load user by email, not username
+    // User userEntity = userService.getUserByEmail(loginRequest.getEmail());
+
+    // if (userEntity == null) {
+    // throw new UsernameNotFoundException("User not found with email: " +
+    // loginRequest.getEmail());
+    // }
+
+    // // Match raw password with hashed password
+    // if (!passwordEncoder.matches(loginRequest.getPassword(),
+    // userEntity.getPassword())) {
+    // throw new BadCredentialsException("Invalid email or password");
+    // }
+
+    // // Load UserDetails via your custom service, if needed for JWT
+    // UserDetails userDetails =
+    // userDetailsService.loadUserByUsername(userEntity.getUsername());
+
+    // String token = jwtUtil.generateToken(userDetails);
+
+    // Map<String, Object> response = new HashMap<>();
+    // response.put("token", token);
+    // response.put("user", Map.of(
+    // "id", userEntity.getId(),
+    // "email", userEntity.getEmail(),
+    // "username", userEntity.getUsername()));
+
+    // return ResponseEntity.ok(response);
+
+    // } catch (Exception e) {
+    // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error",
+    // e.getMessage()));
+    // }
+    // }
+
+    // @PostMapping("/login")
+    // public ResponseEntity<?> loginWithMap(@RequestBody LoginRequest loginRequest)
+    // {
     // try {
     // Map<String, Object> response = userService.loginWithMap(loginRequest);
     // return ResponseEntity.ok(response);

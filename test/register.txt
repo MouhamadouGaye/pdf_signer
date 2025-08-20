@@ -1,3 +1,12 @@
 curl -X POST http://localhost:8080/api/users/register \
   -H "Content-Type: application/json" \
-  -d '{ "username": "test10", "email":"test10@gmail.com","password":"test101234"}'
+  -d '{ "username": "test12", "email":"test12@gmail.com","password":"test121234"}'
+
+
+  curl -X POST http://localhost:8080/api/users/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "test14",
+    "email": "test14@gmail.com",
+    "password": "test141234"
+  }'

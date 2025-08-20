@@ -124,6 +124,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 @Getter
 @Setter
 @NoArgsConstructor // 👈 Required by Hibernate
+@AllArgsConstructor
 @Builder // Still allows builder pattern
 public class User implements Serializable { // Added Serializable for JWT compatibility
 
@@ -149,15 +150,6 @@ public class User implements Serializable { // Added Serializable for JWT compat
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-
-    public User(Long id, String username, String password, String email, Set<Role> roles, LocalDateTime createdAt) {
-        this.id = id;
-        this.username = username;
-        this.email = email;
-        this.roles = roles;
-        this.createdAt = createdAt;
-
-    }
 
     // Getters and Setters
     public Long getId() {
